@@ -1,31 +1,19 @@
-import {ReactNode} from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Home from './pages/Home'
-import './App.css'
-
-function RequireAuth({ children }: { children: ReactNode}) {
-  const token = localStorage.getItem('authToken')
-  if (!token) return <Navigate to="/login" replace />
-  return children
-}
+import { useState } from 'react'
+import LoginPage from './components/LoginPage'
+import JiraDashboard from './components/JiraDashboard'
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <Home />
-            </RequireAuth>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      {isAuthenticated ? (
+        <JiraDashboard onLogout={() => setIsAuthenticated(false)} />
+      ) : (
+        <LoginPage onLogin={() => setIsAuthenticated(true)} />
+      )}
+    </>
   )
 }
 
