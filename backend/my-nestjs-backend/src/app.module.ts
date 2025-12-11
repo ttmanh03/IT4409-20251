@@ -1,9 +1,11 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DatabaseModule } from './db/database.module';  // ← Import này
+import { DatabaseModule } from './db/database.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ProjectMembersModule } from './project-members/project-members.module';
@@ -21,7 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    DatabaseModule,  // ← Thêm vào đây
+    DatabaseModule,
     UsersModule,
     ProjectsModule,
     ProjectMembersModule,
@@ -34,6 +36,12 @@ import { NotificationsModule } from './notifications/notifications.module';
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

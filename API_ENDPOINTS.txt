@@ -430,5 +430,8 @@ LƯỚI ỠI NHỮNG TODO CẦN HOÀN THÀNH
 
 
 ================================================================================
+Password ví dụ: Nguoidung123@
+Khi có trùng lặp email và username thì phải log ra thông báo cả 2
+Xác thực email sử dung Sendgrid
 Last Updated: 2025-12-11
 ================================================================================

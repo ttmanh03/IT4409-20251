@@ -1,36 +1,53 @@
 // src/users/users.service.ts
-import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { eq, or, ilike } from 'drizzle-orm';
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { DRIZZLE } from '../db/database.module';
 import { users, User } from '../db/schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { EmailService } from '../email/email.service';
 import * as schema from '../db/schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(DRIZZLE) private db: NeonHttpDatabase<typeof schema>,
+    private emailService: EmailService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'passwordHash'>> {
+    // Validation
+    if (!createUserDto.email || !createUserDto.email.includes('@')) {
+      throw new BadRequestException('Email không hợp lệ');
+    }
+
+    if (createUserDto.username.length < 5 || createUserDto.username.length > 20) {
+      throw new BadRequestException('Username phải từ 5-20 ký tự');
+    }
+
     // Check if email already exists
     const existingEmail = await this.findByEmail(createUserDto.email);
     if (existingEmail) {
-      throw new ConflictException('Email đã được sử dụng');
+      throw new ConflictException('Email này đã được đăng ký. Vui lòng dùng email khác hoặc đăng nhập');
     }
 
     // Check if username already exists
     const existingUsername = await this.findByUsername(createUserDto.username);
     if (existingUsername) {
-      throw new ConflictException('Username đã được sử dụng');
+      throw new ConflictException('Username này đã tồn tại. Vui lòng chọn username khác');
     }
 
     // Hash password
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
+
+    // Generate verification token
+    const verificationToken = randomBytes(32).toString('hex');
+    const tokenExpiry = new Date(Date.now() +  60 * 1000); // 1 minute
 
     const [user] = await this.db
       .insert(users)
@@ -41,8 +58,23 @@ export class UsersService {
         fullName: createUserDto.fullName,
         avatarUrl: createUserDto.avatarUrl,
         status: createUserDto.status || 'active',
+        verificationToken,
+        verificationTokenExpiry: tokenExpiry,
+        emailVerified: false,
       })
       .returning();
+
+    // Send verification email
+    try {
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        user.fullName || 'User',
+        verificationToken,
+      );
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      // Vẫn tạo tài khoản nhưng log lỗi
+    }
 
     // Remove password from response
     const { passwordHash: _, ...userWithoutPassword } = user;
@@ -160,17 +192,17 @@ export class UsersService {
     const user = await this.findByEmailOrUsername(loginDto.emailOrUsername);
 
     if (!user) {
-      return null;
+      throw new BadRequestException('Email/Username hoặc mật khẩu không đúng');
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
 
     if (!isPasswordValid) {
-      return null;
+      throw new BadRequestException('Email/Username hoặc mật khẩu không đúng');
     }
 
     if (user.status !== 'active') {
-      throw new ConflictException('Tài khoản đã bị khóa hoặc vô hiệu hóa');
+      throw new ConflictException('Tài khoản đã bị khóa hoặc vô hiệu hóa. Vui lòng liên hệ quản trị viên');
     }
 
     // Update last login
@@ -178,5 +210,78 @@ export class UsersService {
 
     const { passwordHash, ...userWithoutPassword } = user;
     return userWithoutPassword;
+  }
+
+  async verifyEmail(verifyEmailDto: VerifyEmailDto): Promise<Omit<User, 'passwordHash'>> {
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.verificationToken, verifyEmailDto.token));
+
+    if (!user) {
+      throw new BadRequestException('Token xác thực không hợp lệ');
+    }
+
+    // Check if token has expired
+    if (!user.verificationTokenExpiry || new Date() > user.verificationTokenExpiry) {
+      throw new BadRequestException('Token xác thực đã hết hạn. Vui lòng đăng ký lại');
+    }
+
+    // Check if email already verified
+    if (user.emailVerified) {
+      throw new BadRequestException('Email đã được xác thực');
+    }
+
+    // Update user: mark as verified, clear token
+    const [updatedUser] = await this.db
+      .update(users)
+      .set({
+        emailVerified: true,
+        verificationToken: null,
+        verificationTokenExpiry: null,
+      })
+      .where(eq(users.id, user.id))
+      .returning();
+
+    const { passwordHash, ...userWithoutPassword } = updatedUser;
+    return userWithoutPassword;
+  }
+
+  async resendVerificationEmail(email: string): Promise<{ message: string }> {
+    const user = await this.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('Email không tồn tại');
+    }
+
+    if (user.emailVerified) {
+      throw new BadRequestException('Email này đã được xác thực');
+    }
+
+    // Generate new token
+    const verificationToken = randomBytes(32).toString('hex');
+    const tokenExpiry = new Date(Date.now() + 60 * 1000); // 1 phút
+
+    // Update token in DB
+    await this.db
+      .update(users)
+      .set({
+        verificationToken,
+        verificationTokenExpiry: tokenExpiry,
+      })
+      .where(eq(users.id, user.id));
+
+    // Send email
+    try {
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        user.fullName || 'User',
+        verificationToken,
+      );
+      return { message: 'Email xác thực đã được gửi lại' };
+    } catch (error) {
+      console.error('Failed to resend verification email:', error);
+      throw new Error('Không thể gửi email xác thực');
+    }
   }
 }

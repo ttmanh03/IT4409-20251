@@ -96,6 +96,10 @@ export const users = pgTable(
     fullName: varchar('full_name', { length: 100 }),
     avatarUrl: varchar('avatar_url', { length: 500 }),
     status: userStatusEnum('status').notNull().default('active'),
+    // Email verification fields
+    emailVerified: boolean('email_verified').notNull().default(false),
+    verificationToken: varchar('verification_token', { length: 255 }),
+    verificationTokenExpiry: timestamp('verification_token_expiry', { withTimezone: true }),
     lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -105,6 +109,7 @@ export const users = pgTable(
     usernameIdx: index('idx_users_username').on(table.username),
     statusIdx: index('idx_users_status').on(table.status),
     lastLoginIdx: index('idx_users_last_login').on(table.lastLoginAt),
+    verificationTokenIdx: index('idx_users_verification_token').on(table.verificationToken),
   })
 );
 
