@@ -1,0 +1,434 @@
+================================================================================
+                    DANH SÁCH TẤT CẢ API ENDPOINTS
+                        BTNHOM PROJECT - NestJS Backend
+================================================================================
+
+Base URL: http://localhost:3000
+Port: 3000
+Environment: Development
+
+================================================================================
+1. HOME - Kiểm tra server
+================================================================================
+
+GET /
+  - Mô tả: Hello message
+  - Response: String message
+
+
+================================================================================
+2. USERS - Quản lý người dùng
+================================================================================
+
+POST /users
+  - Mô tả: Tạo người dùng mới
+  - Body: { email, username, password, fullName, ... }
+
+POST /users/login
+  - Mô tả: Đăng nhập
+  - Body: { email/username, password }
+  - Response: { statusCode, message, user }
+
+GET /users
+  - Mô tả: Lấy tất cả người dùng
+
+GET /users/:id
+  - Mô tả: Lấy thông tin người dùng theo ID
+  - Params: id (number)
+
+PUT /users/:id
+  - Mô tả: Cập nhật thông tin người dùng
+  - Params: id (number)
+  - Body: { fullName, email, ... }
+
+DELETE /users/:id
+  - Mô tả: Xóa người dùng
+  - Params: id (number)
+
+
+================================================================================
+3. PROJECTS - Quản lý dự án
+================================================================================
+
+POST /projects
+  - Mô tả: Tạo dự án mới
+  - Body: { name, description, key, ... }
+
+GET /projects
+  - Mô tả: Lấy tất cả dự án
+  - Query: userId (optional) - Lấy projects của user cụ thể
+
+GET /projects/:id
+  - Mô tả: Lấy chi tiết dự án
+  - Params: id (number)
+
+PUT /projects/:id
+  - Mô tả: Cập nhật dự án
+  - Params: id (number)
+  - Body: { name, description, ... }
+
+DELETE /projects/:id
+  - Mô tả: Xóa dự án
+  - Params: id (number)
+
+GET /projects/:id/role
+  - Mô tả: Lấy vai trò của user trong project
+  - Params: id (number)
+  - Response: { role }
+
+
+================================================================================
+4. SPRINTS - Quản lý sprint
+================================================================================
+
+POST /sprints
+  - Mô tả: Tạo sprint mới
+  - Body: { name, projectId, startDate, endDate, ... }
+
+GET /sprints
+  - Mô tả: Lấy sprints của project
+  - Query: projectId (required - bắt buộc)
+
+GET /sprints/:id
+  - Mô tả: Lấy chi tiết sprint
+  - Params: id (number)
+
+PUT /sprints/:id
+  - Mô tả: Cập nhật sprint
+  - Params: id (number)
+  - Body: { name, startDate, endDate, ... }
+
+DELETE /sprints/:id
+  - Mô tả: Xóa sprint
+  - Params: id (number)
+
+PATCH /sprints/:id/start
+  - Mô tả: Bắt đầu sprint
+  - Params: id (number)
+
+PATCH /sprints/:id/complete
+  - Mô tả: Hoàn thành sprint
+  - Params: id (number)
+
+
+================================================================================
+5. TASKS - Quản lý công việc
+================================================================================
+
+POST /tasks
+  - Mô tả: Tạo task mới
+  - Body: { title, description, projectId, sprintId, assigneeId, priority, ... }
+
+GET /tasks
+  - Mô tả: Lấy tất cả tasks
+
+GET /tasks
+  - Mô tả: Lấy tasks của project
+  - Query: projectId (number)
+
+GET /tasks
+  - Mô tả: Lấy tasks của sprint
+  - Query: sprintId (number)
+
+GET /tasks
+  - Mô tả: Lấy tasks được gán cho user
+  - Query: assigneeId (number)
+
+GET /tasks/:id
+  - Mô tả: Lấy chi tiết task
+  - Params: id (number)
+
+GET /tasks/:id/subtasks
+  - Mô tả: Lấy subtasks của task
+  - Params: id (number)
+
+PUT /tasks/:id
+  - Mô tả: Cập nhật task
+  - Params: id (number)
+  - Body: { title, description, priority, ... }
+
+PATCH /tasks/:id/status
+  - Mô tả: Cập nhật trạng thái task
+  - Params: id (number)
+  - Body: { status }
+
+PATCH /tasks/:id/assign
+  - Mô tả: Gán task cho người dùng
+  - Params: id (number)
+  - Body: { assigneeId }
+
+DELETE /tasks/:id
+  - Mô tả: Xóa task
+  - Params: id (number)
+
+
+================================================================================
+6. COMMENTS - Quản lý bình luận
+================================================================================
+
+POST /comments
+  - Mô tả: Tạo bình luận
+  - Body: { content, taskId, parentCommentId (optional) }
+
+GET /comments
+  - Mô tả: Lấy bình luận của task
+  - Query: taskId (required - bắt buộc)
+
+GET /comments/:id
+  - Mô tả: Lấy chi tiết bình luận
+  - Params: id (number)
+
+GET /comments/:id/replies
+  - Mô tả: Lấy replies/phản hồi của bình luận
+  - Params: id (number)
+
+PUT /comments/:id
+  - Mô tả: Cập nhật bình luận
+  - Params: id (number)
+  - Body: { content }
+
+DELETE /comments/:id
+  - Mô tả: Xóa bình luận
+  - Params: id (number)
+
+
+================================================================================
+7. ATTACHMENTS - Quản lý tập tin đính kèm
+================================================================================
+
+POST /attachments
+  - Mô tả: Tạo attachment (đính kèm file)
+  - Body: { fileName, fileUrl, taskId, ... }
+
+GET /attachments
+  - Mô tả: Lấy attachments của task
+  - Query: taskId (required - bắt buộc)
+
+GET /attachments/:id
+  - Mô tả: Lấy chi tiết attachment
+  - Params: id (number)
+
+DELETE /attachments/:id
+  - Mô tả: Xóa attachment
+  - Params: id (number)
+
+
+================================================================================
+8. LABELS - Quản lý nhãn/Tags
+================================================================================
+
+POST /labels
+  - Mô tả: Tạo label mới
+  - Body: { name, color, projectId, ... }
+
+GET /labels
+  - Mô tả: Lấy labels của project
+  - Query: projectId (required - bắt buộc)
+
+GET /labels/:id
+  - Mô tả: Lấy chi tiết label
+  - Params: id (number)
+
+PUT /labels/:id
+  - Mô tả: Cập nhật label
+  - Params: id (number)
+  - Body: { name, color }
+
+DELETE /labels/:id
+  - Mô tả: Xóa label
+  - Params: id (number)
+
+--- Task Labels (Gán label cho task) ---
+
+POST /tasks/:taskId/labels
+  - Mô tả: Gán label cho task
+  - Params: taskId (number)
+  - Body: { labelId }
+
+GET /tasks/:taskId/labels
+  - Mô tả: Lấy tất cả labels của task
+  - Params: taskId (number)
+
+DELETE /tasks/:taskId/labels/:labelId
+  - Mô tả: Xóa label khỏi task
+  - Params: taskId (number), labelId (number)
+
+
+================================================================================
+9. PROJECT MEMBERS - Quản lý thành viên project
+================================================================================
+
+POST /projects/:projectId/members
+  - Mô tả: Thêm thành viên vào project
+  - Params: projectId (number)
+  - Body: { userId, role, ... }
+
+GET /projects/:projectId/members
+  - Mô tả: Lấy tất cả thành viên của project
+  - Params: projectId (number)
+
+GET /projects/:projectId/members/active
+  - Mô tả: Lấy các thành viên hoạt động của project
+  - Params: projectId (number)
+
+PATCH /projects/:projectId/members/:userId/accept
+  - Mô tả: Chấp nhận lời mời tham gia project
+  - Params: projectId (number), userId (number)
+
+PATCH /projects/:projectId/members/:userId/role
+  - Mô tả: Cập nhật vai trò của thành viên
+  - Params: projectId (number), userId (number)
+  - Body: { role }
+
+DELETE /projects/:projectId/members/:userId
+  - Mô tả: Xóa thành viên khỏi project
+  - Params: projectId (number), userId (number)
+
+
+================================================================================
+10. TASK HISTORY - Lịch sử thay đổi task
+================================================================================
+
+GET /task-history
+  - Mô tả: Lấy lịch sử thay đổi của task
+  - Query: taskId (required - bắt buộc)
+
+GET /task-history/user/:userId
+  - Mô tả: Lấy lịch sử thay đổi theo user
+  - Params: userId (number)
+
+
+================================================================================
+11. NOTIFICATIONS - Quản lý thông báo
+================================================================================
+
+POST /notifications
+  - Mô tả: Tạo thông báo
+  - Body: { userId, title, message, type, ... }
+
+GET /notifications/user/:userId
+  - Mô tả: Lấy tất cả thông báo của user
+  - Params: userId (number)
+
+GET /notifications/user/:userId/unread
+  - Mô tả: Lấy thông báo chưa đọc của user
+  - Params: userId (number)
+
+GET /notifications/user/:userId/count
+  - Mô tả: Đếm số lượng thông báo chưa đọc
+  - Params: userId (number)
+  - Response: { count }
+
+GET /notifications/:id
+  - Mô tả: Lấy chi tiết thông báo
+  - Params: id (number)
+
+PATCH /notifications/:id/read
+  - Mô tả: Đánh dấu thông báo đã đọc
+  - Params: id (number)
+
+PATCH /notifications/user/:userId/read-all
+  - Mô tả: Đánh dấu tất cả thông báo đã đọc
+  - Params: userId (number)
+  - Response: { message, count }
+
+DELETE /notifications/:id
+  - Mô tả: Xóa thông báo
+  - Params: id (number)
+
+DELETE /notifications/user/:userId/all
+  - Mô tả: Xóa tất cả thông báo của user
+  - Params: userId (number)
+  - Response: { message, count }
+
+
+================================================================================
+HƯỚNG DẪN TEST TRÊN POSTMAN
+================================================================================
+
+1. CHUẨN BỊ:
+   - Mở Postman
+   - Tạo Collection mới: "BTNHOM API"
+   - Đảm bảo backend đang chạy trên http://localhost:3000
+
+2. THIẾT LẬP ENVIRONMENT:
+   - Tạo Environment variable: baseUrl = http://localhost:3000
+   - Sử dụng {{baseUrl}} trong các request
+
+3. TEST FLOW ĐỀ NGHỊ:
+   a) Test Users
+      - POST /users (tạo user)
+      - POST /users/login (đăng nhập)
+      - GET /users (lấy tất cả)
+      - GET /users/1 (lấy user 1)
+
+   b) Test Projects
+      - POST /projects (tạo project)
+      - GET /projects
+      - GET /projects/1
+
+   c) Test Sprints
+      - POST /sprints (tạo sprint)
+      - GET /sprints?projectId=1
+      - PATCH /sprints/1/start (bắt đầu sprint)
+
+   d) Test Tasks
+      - POST /tasks (tạo task)
+      - GET /tasks?projectId=1
+      - PATCH /tasks/1/status (đổi status)
+
+   e) Test Comments, Labels, Attachments...
+
+4. HEADER YÊU CẦU:
+   - Content-Type: application/json
+   - (Sau khi implement JWT: Authorization: Bearer <token>)
+
+5. GHI CHÚ QUAN TRỌNG:
+   ⚠️  Hiện tại userId được hardcode = 1 cho demo
+   ⚠️  Cần implement JWT authentication để replace hardcoded userId
+   ⚠️  Tất cả parameters trong path được đánh dấu :paramName
+   ⚠️  Query parameters dùng ?paramName=value
+
+
+================================================================================
+HTTP METHODS
+================================================================================
+
+POST   - Tạo resource mới
+GET    - Lấy dữ liệu
+PUT    - Cập nhật toàn bộ resource
+PATCH  - Cập nhật một phần resource
+DELETE - Xóa resource
+
+HTTP STATUS CODES:
+- 200: OK
+- 201: Created
+- 204: No Content
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 500: Internal Server Error
+
+
+================================================================================
+LƯỚI ỠI NHỮNG TODO CẦN HOÀN THÀNH
+================================================================================
+
+☐ Implement JWT Authentication (thay thế hardcoded userId)
+☐ Add CORS configuration cho production
+☐ Implement role-based access control (RBAC)
+☐ Add input validation DTOs
+☐ Add error handling middleware
+☐ Implement file upload cho attachments
+☐ Add pagination cho GET endpoints
+☐ Add filtering và sorting capabilities
+☐ Implement WebSocket cho real-time notifications
+☐ Add request logging
+☐ Implement rate limiting
+☐ Add API documentation (Swagger/OpenAPI)
+
+
+================================================================================
+Last Updated: 2025-12-11
+================================================================================
