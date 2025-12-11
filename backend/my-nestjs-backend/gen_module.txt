@@ -1,0 +1,49 @@
+# Users module
+nest g module users
+nest g service users --no-spec
+nest g controller users --no-spec
+
+# Projects module
+nest g module projects
+nest g service projects --no-spec
+nest g controller projects --no-spec
+
+# Project Members module
+nest g module project-members
+nest g service project-members --no-spec
+nest g controller project-members --no-spec
+
+# Sprints module
+nest g module sprints
+nest g service sprints --no-spec
+nest g controller sprints --no-spec
+
+# Tasks module
+nest g module tasks
+nest g service tasks --no-spec
+nest g controller tasks --no-spec
+
+# Comments module
+nest g module comments
+nest g service comments --no-spec
+nest g controller comments --no-spec
+
+# Attachments module
+nest g module attachments
+nest g service attachments --no-spec
+nest g controller attachments --no-spec
+
+# Labels module
+nest g module labels
+nest g service labels --no-spec
+nest g controller labels --no-spec
+
+# Task History module
+nest g module task-history
+nest g service task-history --no-spec
+nest g controller task-history --no-spec
+
+# Notifications module
+nest g module notifications
+nest g service notifications --no-spec
+nest g controller notifications --no-spec
